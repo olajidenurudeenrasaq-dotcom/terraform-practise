@@ -12,40 +12,44 @@ web page and no SSH access.
 1. In S3, create the bucket `tfstatefilepractise` in the AWS region you plan
    to use. Turn on bucket versioning and keep Block Public Access enabled.
    The bucket stores Terraform's state; this project does not create it.
-2. In IAM, create an OIDC identity provider for
-   `https://token.actions.githubusercontent.com` with audience
-   `sts.amazonaws.com` (reuse it if it already exists).
-3. Create an IAM role for GitHub Actions. Set its trust policy to allow your
-   GitHub repository's `main` branch. Replace the example owner, repo, and
-   account ID with yours:
+2. In **IAM → Identity providers**, check whether
+   `token.actions.githubusercontent.com` already exists. If not, add it with
+   audience `sts.amazonaws.com`.
+3. In **IAM → Roles → Create role**, choose **Web identity**, select the
+   GitHub provider, and set the audience to `sts.amazonaws.com`. Finish
+   creating a role named `GitHubTerraformPractice`.
+4. Open the new role's **Trust relationships → Edit trust policy**. Replace
+   the policy there with the JSON below, then save. This uses the provider
+   ARN from the trust policy you shared and allows only this repository's
+   `main` branch:
 
    ```json
    {
      "Version": "2012-10-17",
-     "Statement": [{
-       "Effect": "Allow",
-       "Principal": {
-         "Federated": "arn:aws:iam::AWS_ACCOUNT_ID:oidc-provider/token.actions.githubusercontent.com"
-       },
-       "Action": "sts:AssumeRoleWithWebIdentity",
-       "Condition": {
-         "StringEquals": {
-           "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Principal": {
+           "Federated": "arn:aws:iam::AWS_ACCOUNT_ID:oidc-provider/token.actions.githubusercontent.com"
          },
-         "StringLike": {
-           "token.actions.githubusercontent.com:sub": "repo:OWNER/REPOSITORY:ref:refs/heads/main"
+         "Action": "sts:AssumeRoleWithWebIdentity",
+         "Condition": {
+           "StringEquals": {
+             "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+             "token.actions.githubusercontent.com:sub": "repo:olajidenurudeenrasaq-dotcom/terraform-practise:ref:refs/heads/main"
+           }
          }
        }
-     }]
+     ]
    }
    ```
 
-4. Attach [aws-iam-policy.json](./aws-iam-policy.json) to the role. It is
-   already set up for the `tfstatefilepractise` bucket.
-5. After creating the role, go to **IAM → Roles** and click the role name.
-   On the role details page, copy the **ARN** shown near the top. It looks
-   like `arn:aws:iam::123456789012:role/GitHubTerraformPractice`. You will
-   paste this value into GitHub as `AWS_ROLE_ARN`.
+   Replace `AWS_ACCOUNT_ID` with the 12-digit account number in the existing
+   OIDC provider ARN in IAM. The ARN must be for a provider in the same AWS
+   account as the role.
+5. On the role page, choose **Add permissions** and attach the policy created
+   from [aws-iam-policy.json](./aws-iam-policy.json). Then copy the role ARN
+   shown near the top of the page.
 
 ## 2. Add GitHub variables
 
@@ -60,6 +64,13 @@ Variables** and add:
 
 No AWS access keys are needed. The workflows use OIDC for temporary
 credentials.
+
+If the workflow still cannot assume the role, open the role's **Trust
+relationships → Edit trust policy** and replace it with the policy above.
+This removes the duplicate wildcard `sub` entries. Also open **IAM →
+Identity providers → token.actions.githubusercontent.com** and confirm
+`sts.amazonaws.com` is listed as an audience. In GitHub, make sure the
+`AWS_ROLE_ARN` variable exactly matches the ARN shown on this role's page.
 
 ## 3. Push the files to GitHub
 
