@@ -1,5 +1,7 @@
 # Git practice: branches, syncing, and recovery
 
+God is helping me to learn git
+
 This lesson builds on your first commit. Run commands from the repository root
 (`terraform-practise`) in PowerShell. The repository currently has a `main`
 branch and an `origin` remote, so you can practice both local branches and
