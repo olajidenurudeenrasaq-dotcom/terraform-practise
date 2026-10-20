@@ -3,10 +3,6 @@ name: Deploy practice EC2
 on:
   workflow_dispatch:
 
-permissions:
-  contents: read
-  id-token: write
-
 concurrency:
   group: terraform-practice-ec2
   cancel-in-progress: false
@@ -14,6 +10,9 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Required for requesting the OIDC token
+      contents: read # Required for checkout
     env:
       AWS_REGION: ${{ vars.AWS_REGION }}
       TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
