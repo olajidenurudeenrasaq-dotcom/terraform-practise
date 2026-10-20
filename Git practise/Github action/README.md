@@ -2,7 +2,8 @@
 
 This lab uses Terraform and GitHub Actions to create a small EC2 web server.
 The workflows run only when you start them manually. The server has a public
-web page and no SSH access.
+web page and no SSH access. Terraform also creates a small subnet in your
+default VPC because this AWS account currently has no default subnets.
 
 > **Costs:** AWS may charge for the EC2 instance, storage, and public IP.
 > Deploy only for practice, then run the destroy workflow.
@@ -25,10 +26,10 @@ web page and no SSH access.
    account ID is different, replace `676206937049` in the file with your
    account ID.
 
-   This policy allows workflows from any branch in this repository to assume
-   the role. For a more restrictive setup, replace the `sub` value with
-   `repo:olajidenurudeenrasaq-dotcom/terraform-practise:ref:refs/heads/main`
-   to allow only the `main` branch.
+   The `sub` value uses this repository's current immutable GitHub IDs and
+   allows only the `main` branch. If you use a different repository, copy
+   that repository's `sub` from the **Debug OIDC claims** step in the Actions
+   log and use it here.
 5. On the role page, choose **Add permissions** and attach the policy created
    from [aws-iam-policy.json](./aws-iam-policy.json). Then copy the role ARN
    shown near the top of the page.
@@ -76,7 +77,8 @@ for the web server to start responding.
 
 Open **Actions → Destroy practice EC2 → Run workflow** on `main`. Type
 `DESTROY` to confirm. This removes the EC2 instance and security group.
-Terraform's state bucket is kept so you can practice again.
+Terraform's practice subnet is also removed. The state bucket is kept so you
+can practice again.
 
 ## Optional: change Terraform settings
 

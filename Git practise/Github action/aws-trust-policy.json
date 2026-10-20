@@ -8,11 +8,9 @@
       },
       "Action": "sts:AssumeRoleWithWebIdentity",
       "Condition": {
-        "StringLike": {
-          "token.actions.githubusercontent.com:sub": "repo:olajidenurudeenrasaq-dotcom/terraform-practise:*"
-        },
         "StringEquals": {
-          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+          "token.actions.githubusercontent.com:sub": "repo:olajidenurudeenrasaq-dotcom@334230475/terraform-practise@1426779256:ref:refs/heads/main"
         }
       }
     }

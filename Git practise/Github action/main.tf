@@ -2,11 +2,8 @@ data "aws_vpc" "default" {
   default = true
 }
 
-data "aws_subnets" "default" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
-  }
+data "aws_availability_zones" "available" {
+  state = "available"
 }
 
 data "aws_ami" "amazon_linux" {
@@ -26,6 +23,18 @@ data "aws_ami" "amazon_linux" {
   filter {
     name   = "virtualization-type"
     values = ["hvm"]
+  }
+}
+
+resource "aws_subnet" "web" {
+  vpc_id                  = data.aws_vpc.default.id
+  cidr_block              = cidrsubnet(data.aws_vpc.default.cidr_block, 8, 255)
+  availability_zone       = sort(data.aws_availability_zones.available.names)[0]
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name        = "github-actions-practice-subnet"
+    Environment = "practice"
   }
 }
 
@@ -58,7 +67,7 @@ resource "aws_security_group" "web" {
 resource "aws_instance" "web" {
   ami                         = data.aws_ami.amazon_linux.id
   instance_type               = var.instance_type
-  subnet_id                   = sort(data.aws_subnets.default.ids)[0]
+  subnet_id                   = aws_subnet.web.id
   vpc_security_group_ids      = [aws_security_group.web.id]
   associate_public_ip_address = true
 
