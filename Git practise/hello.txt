@@ -1,0 +1,3 @@
+Hello, Git!
+
+This file is for practicing staging and committing.
