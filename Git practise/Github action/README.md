@@ -19,34 +19,16 @@ web page and no SSH access.
    GitHub provider, and set the audience to `sts.amazonaws.com`. Finish
    creating a role named `GitHubTerraformPractice`.
 4. Open the new role's **Trust relationships → Edit trust policy**. Replace
-   the policy there with the JSON below, then save. This uses the provider
-   ARN from the trust policy you shared and allows only this repository's
-   `main` branch:
+   the trust policy with the contents of
+   [aws-trust-policy.json](./aws-trust-policy.json), then save. Confirm the
+   provider ARN in the file matches the provider in your AWS account. If your
+   account ID is different, replace `676206937049` in the file with your
+   account ID.
 
-   ```json
-   {
-     "Version": "2012-10-17",
-     "Statement": [
-       {
-         "Effect": "Allow",
-         "Principal": {
-           "Federated": "arn:aws:iam::AWS_ACCOUNT_ID:oidc-provider/token.actions.githubusercontent.com"
-         },
-         "Action": "sts:AssumeRoleWithWebIdentity",
-         "Condition": {
-           "StringEquals": {
-             "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-             "token.actions.githubusercontent.com:sub": "repo:olajidenurudeenrasaq-dotcom/terraform-practise:ref:refs/heads/main"
-           }
-         }
-       }
-     ]
-   }
-   ```
-
-   Replace `AWS_ACCOUNT_ID` with the 12-digit account number in the existing
-   OIDC provider ARN in IAM. The ARN must be for a provider in the same AWS
-   account as the role.
+   This policy allows workflows from any branch in this repository to assume
+   the role. For a more restrictive setup, replace the `sub` value with
+   `repo:olajidenurudeenrasaq-dotcom/terraform-practise:ref:refs/heads/main`
+   to allow only the `main` branch.
 5. On the role page, choose **Add permissions** and attach the policy created
    from [aws-iam-policy.json](./aws-iam-policy.json). Then copy the role ARN
    shown near the top of the page.
@@ -65,12 +47,10 @@ Variables** and add:
 No AWS access keys are needed. The workflows use OIDC for temporary
 credentials.
 
-If the workflow still cannot assume the role, open the role's **Trust
-relationships → Edit trust policy** and replace it with the policy above.
-This removes the duplicate wildcard `sub` entries. Also open **IAM →
-Identity providers → token.actions.githubusercontent.com** and confirm
-`sts.amazonaws.com` is listed as an audience. In GitHub, make sure the
-`AWS_ROLE_ARN` variable exactly matches the ARN shown on this role's page.
+If the workflow still cannot assume the role, confirm the saved trust policy
+matches [aws-trust-policy.json](./aws-trust-policy.json), the OIDC provider
+has `sts.amazonaws.com` as an audience, and GitHub's `AWS_ROLE_ARN` variable
+matches the ARN shown on this role's page.
 
 ## 3. Push the files to GitHub
 
